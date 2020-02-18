@@ -11,8 +11,8 @@ The first tool in this package is some syntactic sugar around `CGContext`. This 
 **With Drawing Tools:**
 ```swift
 extension NativeImage {
-    static func swatch(color: NativeColor, size: UIntSize = UIntSize(width: 1, height: 1)) -> NativeImage {
-        NativeImage(size: .init(size)).inCurrentGraphicsContext { swatch, context in
+    static func swatch(color: NativeColor, size: CGSize = CGSize(width: 1, height: 1)) -> NativeImage {
+        NativeImage(size: size).inCurrentGraphicsContext { swatch, context in
             guard let context = context else { return swatch }
             context.setFillColor(color.cgColor)
             context.fill(CGRect(origin: .zero, size: swatch.size))
@@ -27,22 +27,7 @@ extension NativeImage {
 #if canImport(UIKit)
 extension UIImage {
     
-    public convenience init(size: CGSize = CGSize(width: 1, height: 1)) {
-        let rect = CGRect(origin: .zero, size: size)
-        
-        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
-        defer { UIGraphicsEndImageContext() }
-        
-        guard let cgImage = UIGraphicsGetImageFromCurrentImageContext()?.cgImage else {
-            self.init()
-            return
-        }
-        
-        self.init(cgImage: cgImage)
-    }
-    
-    
-    static func swatch(color: UIColor, size: UIntSize = UIntSize(width: 1, height: 1)) -> UIImage {
+    static func swatch(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) -> UIImage {
         let rect = CGRect(origin: .zero, size: size)
         
         UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
@@ -74,7 +59,7 @@ extension UIImage {
 #elseif canImport(AppKit)
 extension NSImage {
     
-    static func swatch(color: NSColor, size: UIntSize = UIntSize(width: 1, height: 1)) -> NSImage {
+    static func swatch(color: NSColor, size: CGSize = CGSize(width: 1, height: 1)) -> NSImage {
         self.lockFocus()
         defer { self.unlockFocus() }
         
@@ -82,7 +67,7 @@ extension NSImage {
             return try operation(image, nil)
         }
         
-        let swatch = NSImage(size: .init(size))
+        let swatch = NSImage(size: size)
         
         let priorContext = NSGraphicsContext.current
         defer { NSGraphicsContext.current = priorContext }
