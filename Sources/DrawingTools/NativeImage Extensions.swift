@@ -196,7 +196,7 @@ public extension UIImage {
 
 
 
-private extension CGContext {
+public extension CGContext {
     
     /// Returns the current `CGContext`
     ///
