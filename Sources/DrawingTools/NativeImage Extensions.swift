@@ -127,23 +127,24 @@ public extension NativeImage {
         rethrows -> Return
     {
         func handleContextSwitch(_ image: NativeImage) throws -> Return {
-            guard let context = CGContext.current else {
-                return try operation(image, nil)
-            }
-            
-            #if canImport(UIKit)
-                UIGraphicsPushContext(context)
-                defer { UIGraphicsPopContext() }
-            #elseif canImport(AppKit)
-                let priorContext = NSGraphicsContext.current
-                defer { NSGraphicsContext.current = priorContext }
-                
-                NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
-            #else
-                #error("This library currently only supports UIKit and AppKit")
-            #endif
-            
-            return try operation(image, context)
+//            guard let context = CGContext.current else {
+//                return try operation(image, nil)
+//            }
+//
+//            #if canImport(UIKit)
+//                UIGraphicsPushContext(context)
+//                defer { UIGraphicsPopContext() }
+//            #elseif canImport(AppKit)
+//                let priorContext = NSGraphicsContext.current
+//                defer { NSGraphicsContext.current = priorContext }
+//
+//                NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
+//            #else
+//                #error("This library currently only supports UIKit and AppKit")
+//            #endif
+//
+//            return try operation(image, context)
+            return try operation(image, .current)
         }
         
         if withFocus {
@@ -152,6 +153,12 @@ public extension NativeImage {
         else {
             return try handleContextSwitch(self)
         }
+    }
+    
+    
+    convenience init(size: CGSize, artist: OperationInCurrentGraphicsContext<Void>) rethrows {
+        self.init(size: size)
+        try self.inCurrentGraphicsContext(do: artist)
     }
     
     
@@ -178,10 +185,15 @@ public extension UIImage {
     /// > add an image representation that you created.
     ///
     /// - Parameter size: The size of the image, measured in points
-    convenience init(size: CGSize = CGSize(width: 1, height: 1)) {
+    convenience init(size: CGSize) {
         let rect = CGRect(origin: .zero, size: size)
         
-        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
+        UIGraphicsBeginImageContextWithOptions(
+            /*size:*/ rect.size,
+            /*opaque:*/ false,
+            /*scale:*/ 0 // This means "Use the current screen's scale"
+        )
+        
         defer { UIGraphicsEndImageContext() }
         
         guard let cgImage = UIGraphicsGetImageFromCurrentImageContext()?.cgImage else {

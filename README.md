@@ -12,11 +12,10 @@ The first tool in this package is some syntactic sugar around `CGContext`. This 
 ```swift
 extension NativeImage {
     static func swatch(color: NativeColor, size: CGSize = CGSize(width: 1, height: 1)) -> NativeImage {
-        NativeImage(size: size).inCurrentGraphicsContext { swatch, context in
+        NativeImage(size: size) { swatch, context in
             guard let context = context else { return swatch }
             context.setFillColor(color.cgColor)
             context.fill(CGRect(origin: .zero, size: swatch.size))
-            return swatch
         }
     }
 }
@@ -28,30 +27,21 @@ extension NativeImage {
 extension UIImage {
     
     static func swatch(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) -> UIImage {
-        let rect = CGRect(origin: .zero, size: size)
-        
-        UIGraphicsBeginImageContextWithOptions(rect.size, false, 0.0)
-        defer { UIGraphicsEndImageContext() }
-        
-        guard let cgImage = UIGraphicsGetImageFromCurrentImageContext()?.cgImage else {
-            return UIImage()
-            return
-        }
-        
-        let swatch = UIImage(cgImage: cgImage)
-        
         UIGraphicsBeginImageContextWithOptions(/*size:*/ .init(size), /*opaque:*/ true, /*scale:*/ 0)
         defer { UIGraphicsEndImageContext() }
         
         guard let context = UIGraphicsGetCurrentContext() else {
-            return try operation(image, nil)
+            return .init()
         }
         
-        UIGraphicsPushContext(context)
-        defer { UIGraphicsPopContext() }
-        
         context.setFillColor(color.cgColor)
-        context.fill(CGRect(origin: .zero, size: swatch.size))
+        context.fill(CGRect(origin: .zero, size: size))
+        
+        guard let cgImage = UIGraphicsGetImageFromCurrentImageContext()?.cgImage else {
+            return UIImage()
+        }
+        
+        let swatch = UIImage(cgImage: cgImage)
         
         return swatch
     }
@@ -64,7 +54,7 @@ extension NSImage {
         defer { self.unlockFocus() }
         
         guard let context = NSGraphicsContext.current?.cgContext else {
-            return try operation(image, nil)
+            return NSImage()
         }
         
         let swatch = NSImage(size: size)
