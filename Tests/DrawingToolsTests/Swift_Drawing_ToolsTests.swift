@@ -1,40 +1,50 @@
 import XCTest
-import DrawingTools
+
 import CrossKitTypes
+import DrawingTools
+import RectangleTools
+import SwiftImage
+
+
 
 final class Swift_Drawing_ToolsTests: XCTestCase {
-    func testNothing() {
-        let image = NativeImage.swatch(color: .systemRed, size: .init(width: 2, height: 2))
-        try! image.pngData()!.write(to: URL(fileURLWithPath: "/Users/benleggiero/Desktop/red.png"))
-        print(image)
+    func testDrawRedSwatch() throws {
+        let nativeImage = try NativeImage.swatch(
+            color: NativeColor(red: 0x42/0xFF, green: 0x69/0xFF, blue: 0xAD/0xFF, alpha: 1),
+            size: CGSize(width: 2, height: 2))
+        
+        guard let pngData = nativeImage.pngData() else {
+            XCTFail("Not PNG data")
+            return
+        }
+        
+        guard let image = Image<RGB<UInt8>>(data: pngData) else {
+            XCTFail("PNG data not PNG data?")
+            return
+        }
+        
+        image.forEach { pixel in
+            XCTAssertEqual(pixel, RGB(red: 0x42, green: 0x69, blue: 0xAD))
+        }
     }
-
-    static var allTests = [
-        ("testNothing", testNothing),
+    
+    
+    static let allTests = [
+        ("testDrawRedSwatch", testDrawRedSwatch),
     ]
 }
 
 
 
-private extension UIImage {
-    
-    static func swatch(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) -> UIImage {
-        UIGraphicsBeginImageContextWithOptions(/*size:*/ .init(size), /*opaque:*/ true, /*scale:*/ 0)
-        defer { UIGraphicsEndImageContext() }
-        
-        guard let context = UIGraphicsGetCurrentContext() else {
-            return .init()
+extension NativeImage {
+    static func swatch(color: NativeColor, size: CGSize = CGSize(width: 1, height: 1)) throws -> NativeImage {
+        try drawNew(size: size, context: .goodForSwatch(size: size)) { context in
+            guard let context = context else {
+                XCTFail("No context?")
+                return
+            }
+            context.setFillColor(color.cgColor)
+            context.fill(CGRect(origin: .zero, size: size))
         }
-        
-        context.setFillColor(color.cgColor)
-        context.fill(CGRect(origin: .zero, size: size))
-        
-        guard let cgImage = UIGraphicsGetImageFromCurrentImageContext()?.cgImage else {
-            return UIImage()
-        }
-        
-        let swatch = UIImage(cgImage: cgImage)
-        
-        return swatch
     }
 }

@@ -11,11 +11,11 @@ The first tool in this package is some syntactic sugar around `CGContext`. This 
 **With Drawing Tools:**
 ```swift
 extension NativeImage {
-    static func swatch(color: NativeColor, size: CGSize = CGSize(width: 1, height: 1)) -> NativeImage {
-        NativeImage(size: size) { swatch, context in
-            guard let context = context else { return swatch }
+    static func swatch(color: NativeColor, size: CGSize = CGSize(width: 1, height: 1)) throws -> NativeImage {
+        try drawNew(size: size, context: .goodForSwatch(size: size)) { context in
+            guard let context = context else { return }
             context.setFillColor(color.cgColor)
-            context.fill(CGRect(origin: .zero, size: swatch.size))
+            context.fill(CGRect(origin: .zero, size: size))
         }
     }
 }
