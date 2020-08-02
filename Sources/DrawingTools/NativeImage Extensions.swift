@@ -34,7 +34,7 @@ public extension NativeImage {
         /// Apple platforms UIKit and WatchKit (Mac Catalyst, iOS, iPadOS, tvOS, and watchOS).
         static let defaultFlipped = false
     #else
-        #error("Could not infer default 'flipped' drawing context for the target OS")
+        #error("Could not infer default 'flipped' drawing context for the target platform")
     #endif
     
     

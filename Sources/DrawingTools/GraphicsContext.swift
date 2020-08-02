@@ -127,9 +127,7 @@ public extension GraphicsContext {
             defer { UIGraphicsEndImageContext() }
             return try operation(.current)
             #elseif canImport(AppKit)
-            return try NativeImage(size: .init(size)).inCurrentGraphicsContext(withFocus: true) { context in
-                return try operation(context)
-            }
+            return try operation(.current)
             #endif
         }
     }
