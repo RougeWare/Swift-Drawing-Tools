@@ -139,7 +139,7 @@ public extension CGContext {
 
 
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 
 

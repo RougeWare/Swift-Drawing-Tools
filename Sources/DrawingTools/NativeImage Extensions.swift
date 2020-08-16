@@ -80,7 +80,7 @@ public extension NativeImage {
     /// - Throws: Anything the given function throws
     func withFocus<Return>(do operation: OperationOnImage<Return>) rethrows -> Return
     {
-        #if canImport(AppKit)
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
             self.lockFocus()
             defer { self.unlockFocus() }
         #endif
@@ -105,7 +105,7 @@ public extension NativeImage {
         do operation: OperationOnImage<Return>)
         rethrows -> Return
     {
-        #if canImport(AppKit)
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
             self.lockFocusFlipped(flipped)
             defer { self.unlockFocus() }
         #endif
@@ -338,7 +338,7 @@ public extension UIImage {
 
 
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 public extension NSImage {
     func pngData() -> Data? {
         // https://stackoverflow.com/a/17510651/3939277
