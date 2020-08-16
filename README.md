@@ -8,10 +8,14 @@ Some tools to help with drawing in Swift
 
 The first tool in this package is some syntactic sugar around `CGContext`. This lets you discard the boilerplate and get down to what really matters. For example:
 
-**With Drawing Tools:**
+### With Drawing Tools: ###
 ```swift
+import DrawingTools
+import CrossKitTypes
+import RectangleTools
+
 extension NativeImage {
-    static func swatch(color: NativeColor, size: CGSize = CGSize(width: 1, height: 1)) throws -> NativeImage {
+    static func swatch(color: NativeColor, size: CGSize = .one) throws -> NativeImage {
         try drawNew(size: size, context: .goodForSwatch(size: size)) { context in
             guard let context = context else { return }
             context.setFillColor(color.cgColor)
@@ -21,56 +25,50 @@ extension NativeImage {
 }
 ```
 
-**Without Drawing Tools:**
+### Without Drawing Tools: ###
 ```swift
 #if canImport(UIKit)
+import UIKit
+
+
+
 extension UIImage {
-    
-    static func swatch(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) -> UIImage {
-        UIGraphicsBeginImageContextWithOptions(/*size:*/ .init(size), /*opaque:*/ true, /*scale:*/ 0)
+    static func swatch(color: NativeColor, size: CGSize = CGSize(width: 1, height: 1)) throws -> NativeImage {
+        let image = NativeImage(size: size)
+        
+        UIGraphicsBeginImageContextWithOptions(.init(size), opaque, scale.forUiGraphics)
         defer { UIGraphicsEndImageContext() }
         
-        guard let context = UIGraphicsGetCurrentContext() else {
-            return .init()
+        if let context = CGContext.current {
+            context.setFillColor(color.cgColor)
+            context.fill(CGRect(origin: .zero, size: size))
         }
         
-        context.setFillColor(color.cgColor)
-        context.fill(CGRect(origin: .zero, size: size))
-        
-        guard let cgImage = UIGraphicsGetImageFromCurrentImageContext()?.cgImage else {
-            return UIImage()
-        }
-        
-        let swatch = UIImage(cgImage: cgImage)
-        
-        return swatch
+        return try UIGraphicsGetImageFromCurrentImageContext().unwrappedOrThrow()
     }
 }
+
 #elseif canImport(AppKit)
+
+import AppKit
+
+
+
 extension NSImage {
-    
-    static func swatch(color: NSColor, size: CGSize = CGSize(width: 1, height: 1)) -> NSImage {
-        self.lockFocus()
-        defer { self.unlockFocus() }
+    static func swatch(color: NSColor, size: CGSize = CGSize(width: 1, height: 1)) throws -> NSImage {
+        let image = NSImage(size: size)
         
-        guard let context = NSGraphicsContext.current?.cgContext else {
-            return NSImage()
+        image.lockFocusFlipped(NSImage.defaultFlipped)
+        defer { image.unlockFocus() }
+                
+        if let context = CGContext.current {
+            context.setFillColor(color.cgColor)
+            context.fill(CGRect(origin: .zero, size: size))
         }
         
-        let swatch = NSImage(size: size)
-        
-        let priorContext = NSGraphicsContext.current
-        defer { NSGraphicsContext.current = priorContext }
-        
-        NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
-        
-        context.setFillColor(color.cgColor)
-        context.fill(CGRect(origin: .zero, size: swatch.size))
-        
-        return swatch
+        return image
     }
 }
-#else
-#error("This library currently only supports UIKit and AppKit")
+#error("This library requires either UIKit or AppKit")
 #endif
 ```
