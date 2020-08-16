@@ -125,10 +125,8 @@ public extension GraphicsContext {
             #if canImport(UIKit)
             UIGraphicsBeginImageContextWithOptions(.init(size), opaque, scale.forUiGraphics)
             defer { UIGraphicsEndImageContext() }
-            return try operation(.current)
-            #elseif canImport(AppKit)
-            return try operation(.current)
             #endif
+            return try operation(.current)
         }
     }
 }

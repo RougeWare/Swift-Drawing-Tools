@@ -6,13 +6,15 @@ Some tools to help with drawing in Swift
 
 ## Context Sugar ##
 
-The first tool in this package is some syntactic sugar around `CGContext`. This lets you discard the boilerplate and get down to what really matters. For example:
+The first tool in this package is some syntactic sugar around `CGContext`. This lets you discard the boilerplate and get down to what really matters. For example, if you wanted to draw a color swatch:
 
 ### With Drawing Tools: ###
 ```swift
 import DrawingTools
 import CrossKitTypes
 import RectangleTools
+
+
 
 extension NativeImage {
     static func swatch(color: NativeColor, size: CGSize = .one) throws -> NativeImage {
