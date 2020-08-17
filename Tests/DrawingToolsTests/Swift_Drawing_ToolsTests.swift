@@ -8,10 +8,12 @@ import SwiftImage
 
 
 final class Swift_Drawing_ToolsTests: XCTestCase {
-    func testDrawRedSwatch() throws {
-        let nativeImage = try NativeImage.swatch(
-            color: NativeColor(red: 0x42/0xFF, green: 0x69/0xFF, blue: 0xAD/0xFF, alpha: 1),
-            size: CGSize(width: 2, height: 2))
+    let testColor = NativeColor(     red: 0x42/0xFF, green: 0x69/0xFF, blue: 0xAD/0xFF, alpha: 1)
+    let testColorForSwiftImage = RGB<UInt8>(red: 0x42,      green: 0x69,      blue: 0xAD)
+    let size = CGSize(width: 2, height: 2)
+    
+    func testDrawSwatch() throws {
+        let nativeImage = try NativeImage.swatch(color: testColor, size: size)
         
         guard let pngData = nativeImage.pngData() else {
             XCTFail("Not PNG data")
@@ -24,13 +26,33 @@ final class Swift_Drawing_ToolsTests: XCTestCase {
         }
         
         image.forEach { pixel in
-            XCTAssertEqual(pixel, RGB(red: 0x42, green: 0x69, blue: 0xAD))
+            XCTAssertEqual(pixel, testColorForSwiftImage)
+        }
+    }
+    
+    
+    func testDrawSwatchWithoutThisPackage() throws {
+        let nativeImageWithoutThisPackage = try NativeImage.swatch_withoutThisPackage(color: testColor, size: size)
+        
+        guard let pngData = nativeImageWithoutThisPackage.pngData() else {
+            XCTFail("Not PNG data")
+            return
+        }
+        
+        guard let image = Image<RGB<UInt8>>(data: pngData) else {
+            XCTFail("PNG data not PNG data?")
+            return
+        }
+        
+        image.forEach { pixel in
+            XCTAssertEqual(pixel, testColorForSwiftImage)
         }
     }
     
     
     static let allTests = [
-        ("testDrawRedSwatch", testDrawRedSwatch),
+        ("testDrawSwatch", testDrawSwatch),
+        ("testDrawSwatchWithoutThisPackage", testDrawSwatchWithoutThisPackage),
     ]
 }
 
@@ -48,3 +70,47 @@ extension NativeImage {
         }
     }
 }
+
+#if canImport(UIKit)
+import UIKit
+
+
+
+extension UIImage {
+    static func swatch_withoutThisPackage(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) throws -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(size, true, 1)
+        defer { UIGraphicsEndImageContext() }
+        
+        if let context = CGContext.current {
+            context.setFillColor(color.cgColor)
+            context.fill(CGRect(origin: .zero, size: size))
+        }
+        
+        return try UIGraphicsGetImageFromCurrentImageContext().unwrappedOrThrow()
+    }
+}
+
+#elseif canImport(AppKit)
+
+import AppKit
+
+
+
+extension NSImage {
+    static func swatch_withoutThisPackage(color: NSColor, size: CGSize = CGSize(width: 1, height: 1)) -> NSImage {
+        let image = NSImage(size: size)
+        
+        image.lockFocusFlipped(NSImage.defaultFlipped)
+        defer { image.unlockFocus() }
+        
+        if let context = CGContext.current {
+            context.setFillColor(color.cgColor)
+            context.fill(CGRect(origin: .zero, size: size))
+        }
+        
+        return image
+    }
+}
+#else
+#error("This library requires either UIKit or AppKit")
+#endif

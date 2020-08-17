@@ -1,8 +1,9 @@
 //
 //  GraphicsContext.swift
-//  
+//  Swift Drawing Tools
 //
 //  Created by Ben Leggiero on 2020-07-26.
+//  Copyright © 2020 Ben Leggiero BH-1-PS
 //
 
 import CoreGraphics
@@ -19,7 +20,7 @@ import RectangleTools
 
 
 
-/// Represents a graphics context
+/// Abstracts a graphics context. This is useful for lazy evaluation and cross-platform context management.
 public enum GraphicsContext {
     
     /// The current graphics context
@@ -31,7 +32,7 @@ public enum GraphicsContext {
     ///   - size:   The size of the new graphics context
     ///   - opaque: _optional_ - `true` if the context should be opaque, `false` if it should have an alpha channel.
     ///             Defaults to `false`, meaning it will have an alpha channel.
-    ///   - scale:  The scale (PPI) of the graphics context
+    ///   - scale:  _optional_ - The scale (PPI) of the graphics context. Defaults to `.currentDisplay`
     case new(size: UIntSize, opaque: Bool = false, scale: Scale = .currentDisplay)
 }
 
@@ -114,6 +115,14 @@ public extension GraphicsContext {
 // MARK: - Platform stuff
 
 public extension GraphicsContext {
+    
+    /// Performs the given operation in a `CGContext`
+    ///
+    /// This takes care of all platform differences automatically.
+    ///
+    /// - Parameter operation: The operation to perform in a `CGContext`
+    /// - Throws: Anything `operation` throws
+    /// - Returns: Anything `operation` returns
     func inCgContext<Return>(do operation: NativeImage.OperationInGraphicsContext<Return>)
         rethrows -> Return
     {

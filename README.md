@@ -35,10 +35,8 @@ import UIKit
 
 
 extension UIImage {
-    static func swatch(color: NativeColor, size: CGSize = CGSize(width: 1, height: 1)) throws -> NativeImage {
-        let image = NativeImage(size: size)
-        
-        UIGraphicsBeginImageContextWithOptions(.init(size), opaque, scale.forUiGraphics)
+    static func swatch(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) throws -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(size, true, 1)
         defer { UIGraphicsEndImageContext() }
         
         if let context = CGContext.current {
@@ -57,12 +55,12 @@ import AppKit
 
 
 extension NSImage {
-    static func swatch(color: NSColor, size: CGSize = CGSize(width: 1, height: 1)) throws -> NSImage {
+    static func swatch(color: NSColor, size: CGSize = CGSize(width: 1, height: 1)) -> NSImage {
         let image = NSImage(size: size)
         
         image.lockFocusFlipped(NSImage.defaultFlipped)
         defer { image.unlockFocus() }
-                
+        
         if let context = CGContext.current {
             context.setFillColor(color.cgColor)
             context.fill(CGRect(origin: .zero, size: size))
@@ -71,6 +69,7 @@ extension NSImage {
         return image
     }
 }
+#else
 #error("This library requires either UIKit or AppKit")
 #endif
 ```

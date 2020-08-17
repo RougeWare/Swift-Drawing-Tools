@@ -59,7 +59,7 @@ public extension NativeImage {
     
     /// The type of function which can perform an operation when given an image
     ///
-    /// - Parameter image:   The image which this function is operating upon
+    /// - Parameter image: The image which this function is operating upon
     typealias OperationOnImage<Return> = (_ image: NativeImage) throws -> Return
 }
 
@@ -75,7 +75,7 @@ public extension NativeImage {
     ///                Defaults to the platform's default.
     ///   - operation: The operation to perform while this image has context focus
     ///
-    /// - Returns: Anything the given function throws
+    /// - Returns: Anything the given function returns
     ///
     /// - Throws: Anything the given function throws
     func withFocus<Return>(do operation: OperationOnImage<Return>) rethrows -> Return
@@ -97,7 +97,7 @@ public extension NativeImage {
     ///                Defaults to the platform's default.
     ///   - operation: The operation to perform while this image has context focus
     ///
-    /// - Returns: Anything the given function throws
+    /// - Returns: Anything the given function returns
     ///
     /// - Throws: Anything the given function throws
     func withFocus<Return>(
@@ -123,7 +123,7 @@ public extension NativeImage {
     ///                Defaults to `true`.
     ///   - operation: The contextualized operation to perform while this image has focus lock
     ///
-    /// - Returns: Anything the given function throws
+    /// - Returns: Anything the given function returns
     ///
     /// - Throws: Anything the given function throws
     func inCurrentGraphicsContext<Return>(
@@ -149,7 +149,7 @@ public extension NativeImage {
     ///                Defaults to `true`.
     ///   - operation: The contextualized operation to perform while this image has focus lock
     ///
-    /// - Returns: Anything the given function throws
+    /// - Returns: Anything the given function returns
     ///
     /// - Throws: Anything the given function throws
     func inCurrentGraphicsContext<Return>(
@@ -177,7 +177,7 @@ public extension NativeImage {
     ///                Defaults to `true`.
     ///   - operation: The contextualized operation to perform while this image has focus lock
     ///
-    /// - Returns: Anything the given function throws
+    /// - Returns: Anything the given function returns
     ///
     /// - Throws: Anything the given function throws
     func inGraphicsContext<Return>(
@@ -212,7 +212,7 @@ public extension NativeImage {
     ///                Defaults to `true`.
     ///   - operation: The contextualized operation to perform while this image has focus lock
     ///
-    /// - Returns: Anything the given function throws
+    /// - Returns: Anything the given function returns
     ///
     /// - Throws: Anything the given function throws
     func inGraphicsContext<Return>(
@@ -242,14 +242,14 @@ public extension NativeImage {
     ///
     /// - Parameters:
     ///   - size:    The size of the new image
-    ///   - context: _optional_ - The context in which to draw the new image
-    ///   - artist:  The function which will draw on the new image
+    ///   - context: _optional_ - The context in which to draw the new image. Defaults to the current context.
+    ///   - artist:  The function which will draw the new image
     ///
     /// - Throws: Any error that `artist` throws
     static func drawNew(
         size: CGSize,
         context: GraphicsContext = .current,
-        artist: OperationInGraphicsContextWithImage<Void>)
+        artist: ArtistWithImage)
         throws -> NativeImage
     {
         try NativeImage(size: size).inGraphicsContext(context, withFocus: true) { image, context in
@@ -270,21 +270,39 @@ public extension NativeImage {
     ///
     /// - Parameters:
     ///   - size:    The size of the new image
-    ///   - context: _optional_ - The context in which to draw the new image
-    ///   - artist:  The function which will draw on the new image
+    ///   - context: _optional_ - The context in which to draw the new image. Defaults to the current context.
+    ///   - artist:  The function which will draw the new image
     ///
     /// - Throws: Any error that `artist` throws
     @inline(__always)
     static func drawNew(
         size: CGSize,
         context: GraphicsContext = .current,
-        artist: OperationInGraphicsContext<Void>)
+        artist: Artist)
         throws -> NativeImage
     {
         try drawNew(size: size, context: context) { _, context in
             try artist(context)
         }
     }
+    
+    
+    
+    /// The type of function which can draw in a graphics context
+    ///
+    /// - Parameter context: The graphics context in which this function is operating. This can be nil, signifying that
+    ///                      the context could not be fetched.
+    typealias Artist = OperationInGraphicsContext<Void>
+    
+    
+    
+    /// The type of function which can draw in a graphics context, and which needs an image reference to do so
+    ///
+    /// - Parameters:
+    ///   - image:   The image which this function is operating upon
+    ///   - context: The graphics context in which this function is operating. This can be nil, signifying that the
+    ///              context could not be fetched.
+    typealias ArtistWithImage = OperationInGraphicsContextWithImage<Void>
 }
 
 
@@ -301,18 +319,11 @@ public enum ImageDrawingError {
 #if canImport(UIKit)
 public extension UIImage {
     
-    /// Approximates a similar `NSImage` initializer:
+    /// Creates a new `UIImage` of the given size, with no content. It is expected that you will immediately draw onto
+    /// it. Using this image without drawing it first is undefined behavior.
+    ///
+    /// This approximates a similar `NSImage` initializer:
     /// https://developer.apple.com/documentation/appkit/nsimage/1520033-init
-    ///
-    /// To quote the documentation of the `NSImage` initializer:
-    ///
-    /// > This method does not add any image representations to the image object. It is permissible to initialize the
-    /// > image object by passing a size of `(0.0, 0.0)`; however, you must set the size to a non-zero value before
-    /// > using it or an exception will be raised.
-    /// >
-    /// > After using this method to initialize an image object, you are expected to provide the image contents before
-    /// > trying to draw the image. You might lock focus on the image and draw to the image or you might explicitly
-    /// > add an image representation that you created.
     ///
     /// - Parameter size: The size of the image, measured in points
     convenience init(size: CGSize) {
