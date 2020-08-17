@@ -4,25 +4,36 @@
 import PackageDescription
 
 let package = Package(
-    name: "Swift-Drawing-Tools",
+    name: "Swift Drawing Tools",
+    
+    platforms: [
+        .iOS(.v11),
+        .macOS(.v10_12),
+        .watchOS(.v4),
+        .tvOS(.v11),
+    ],
+    
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
-            name: "Swift-Drawing-Tools",
-            targets: ["Swift-Drawing-Tools"]),
+            name: "DrawingTools",
+            targets: ["DrawingTools"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/RougeWare/Swift-Rectangle-Tools.git", from: "2.9.0"),
+        .package(url: "https://github.com/RougeWare/Swift-Cross-Kit-Types.git", from: "1.0.0"),
+        .package(url: "https://github.com/RougeWare/Swift-Optional-Tools.git",  from: "1.0.0"),
+        .package(url: "https://github.com/koher/swift-image.git", from: "0.7.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
-            name: "Swift-Drawing-Tools",
-            dependencies: []),
+            name: "DrawingTools",
+            dependencies: ["RectangleTools", "CrossKitTypes", "OptionalTools"]),
         .testTarget(
-            name: "Swift-Drawing-ToolsTests",
-            dependencies: ["Swift-Drawing-Tools"]),
+            name: "DrawingToolsTests",
+            dependencies: ["DrawingTools", "SwiftImage"]),
     ]
 )
