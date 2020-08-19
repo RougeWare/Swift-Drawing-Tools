@@ -45,6 +45,15 @@
           "revision": "28d5ec88e786f65f3127c56049045c6b17fc3121",
           "version": "2.9.0"
         }
+      },
+      {
+        "package": "SimpleLogging",
+        "repositoryURL": "https://github.com/RougeWare/Swift-Simple-Logging.git",
+        "state": {
+          "branch": null,
+          "revision": "ac1c85ab2d633db51b6fb00606139310a152a65b",
+          "version": "0.4.4"
+        }
       }
     ]
   },

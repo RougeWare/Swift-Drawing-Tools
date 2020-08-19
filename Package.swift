@@ -8,7 +8,7 @@ let package = Package(
     
     platforms: [
         .iOS(.v11),
-        .macOS(.v10_12),
+        .macOS(.v10_13),
         .watchOS(.v4),
         .tvOS(.v11),
     ],
@@ -24,6 +24,7 @@ let package = Package(
         .package(url: "https://github.com/RougeWare/Swift-Rectangle-Tools.git", from: "2.9.0"),
         .package(url: "https://github.com/RougeWare/Swift-Cross-Kit-Types.git", from: "1.0.0"),
         .package(url: "https://github.com/RougeWare/Swift-Optional-Tools.git",  from: "1.0.0"),
+        .package(url: "https://github.com/RougeWare/Swift-Simple-Logging.git",  from: "0.4.4"),
         .package(url: "https://github.com/koher/swift-image.git", from: "0.7.0"),
     ],
     targets: [
@@ -31,7 +32,12 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "DrawingTools",
-            dependencies: ["RectangleTools", "CrossKitTypes", "OptionalTools"]),
+            dependencies: [
+                "RectangleTools",
+                "CrossKitTypes",
+                "OptionalTools",
+                "SimpleLogging",
+            ]),
         .testTarget(
             name: "DrawingToolsTests",
             dependencies: ["DrawingTools", "SwiftImage"]),

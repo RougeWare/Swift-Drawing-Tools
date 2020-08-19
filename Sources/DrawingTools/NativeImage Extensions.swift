@@ -19,8 +19,11 @@ import AppKit
 import CrossKitTypes
 import OptionalTools
 import RectangleTools
+import SimpleLogging
 
 
+
+// MARK: - Constants
 
 public extension NativeImage {
     #if canImport(UIKit) || canImport(WatchKit)
@@ -34,36 +37,17 @@ public extension NativeImage {
         /// Apple platforms UIKit and WatchKit (Mac Catalyst, iOS, iPadOS, tvOS, and watchOS).
         static let defaultFlipped = false
     #else
-        #error("Could not infer default 'flipped' drawing context for the target platform")
+        #error("""
+            Could not infer default 'flipped' drawing context for the target platform.
+            If you need this for your platform, file a bug here:
+            https://github.com/RougeWare/Swift-Drawing-Tools/issues/new
+            """)
     #endif
-    
-    
-    
-    /// The type of function which can perform an operation when given a graphics context and image
-    ///
-    /// - Parameters:
-    ///   - image:   The image which this function is operating upon
-    ///   - context: The graphics context in which this function is operating. This can be `nil`, signifying that the
-    ///              context could not be fetched.
-    typealias OperationInGraphicsContextWithImage<Return> = (_ image: NativeImage, _ context: CGContext?) throws -> Return
-    
-    
-    
-    /// The type of function which can perform an operation when given a graphics context
-    ///
-    /// - Parameter context: The graphics context in which this function is operating. This can be `nil`, signifying
-    ///                      that the context could not be fetched.
-    typealias OperationInGraphicsContext<Return> = (_ context: CGContext?) throws -> Return
-    
-    
-    
-    /// The type of function which can perform an operation when given an image
-    ///
-    /// - Parameter image: The image which this function is operating upon
-    typealias OperationOnImage<Return> = (_ image: NativeImage) throws -> Return
 }
 
 
+
+// MARK: - Applying context and focus
 
 public extension NativeImage {
     
@@ -229,9 +213,36 @@ public extension NativeImage {
             try operation(context)
         }
     }
+    
+    
+    
+    /// The type of function which can perform an operation when given a graphics context and image
+    ///
+    /// - Parameters:
+    ///   - image:   The image which this function is operating upon
+    ///   - context: The graphics context in which this function is operating. This can be `nil`, signifying that the
+    ///              context could not be fetched.
+    typealias OperationInGraphicsContextWithImage<Return> = (_ image: NativeImage, _ context: CGContext?) throws -> Return
+    
+    
+    
+    /// The type of function which can perform an operation when given a graphics context
+    ///
+    /// - Parameter context: The graphics context in which this function is operating. This can be `nil`, signifying
+    ///                      that the context could not be fetched.
+    typealias OperationInGraphicsContext<Return> = (_ context: CGContext?) throws -> Return
+    
+    
+    
+    /// The type of function which can perform an operation when given an image
+    ///
+    /// - Parameter image: The image which this function is operating upon
+    typealias OperationOnImage<Return> = (_ image: NativeImage) throws -> Return
 }
 
 
+
+// MARK: - `.drawNew` functions
 
 public extension NativeImage {
     
@@ -287,6 +298,62 @@ public extension NativeImage {
     }
     
     
+    /// Creates a new image and immediately starts drawing on it
+    ///
+    /// - Note: There are two forms of this function: one that passes the `artist` an image and a context, and one that
+    ///         just passes it a context. This is the one which passes both.
+    ///
+    /// - Parameters:
+    ///   - size:    The size of the new image
+    ///   - context: _optional_ - The context in which to draw the new image. Defaults to the current context.
+    ///   - artist:  The function which will draw the new image. If it throws an error, this function returns `nil`
+    ///
+    /// - Returns: The new image that `artist` drew, or `nil`
+    @inline(__always)
+    static func drawNewOrNil(
+        size: CGSize,
+        context: GraphicsContext = .current,
+        artist: ArtistWithImage)
+    -> NativeImage?
+    {
+        do {
+            return try drawNew(size: size, context: context, artist: artist)
+        }
+        catch {
+            log(error: error)
+            return nil
+        }
+    }
+    
+    
+    /// Creates a new image and immediately starts drawing on it
+    ///
+    /// - Note: There are two forms of this function: one that passes the `artist` an image and a context, and one that
+    ///         just passes it a context. This is the one which just passes the context.
+    ///
+    /// - Parameters:
+    ///   - size:    The size of the new image
+    ///   - context: _optional_ - The context in which to draw the new image. Defaults to the current context.
+    ///   - artist:  The function which will draw the new image. If it throws an error, this function returns `nil`
+    ///
+    /// - Returns: The new image that `artist` drew, or `nil`
+    @inline(__always)
+    static func drawNewOrNil(
+        size: CGSize,
+        context: GraphicsContext = .current,
+        artist: Artist)
+    -> NativeImage?
+    {
+        do {
+            return try drawNew(size: size, context: context, artist: artist)
+        }
+        catch {
+            log(error: error)
+            return nil
+        }
+    }
+    
+    
     
     /// The type of function which can draw in a graphics context
     ///
@@ -315,6 +382,8 @@ public enum ImageDrawingError {
 }
 
 
+
+// MARK: - Platform consistency
 
 #if canImport(UIKit)
 public extension UIImage {
