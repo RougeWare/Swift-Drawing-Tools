@@ -250,7 +250,7 @@ public extension NativeImage {
         size: CGSize,
         context: GraphicsContext = .current,
         artist: ArtistWithImage)
-        throws -> NativeImage
+        rethrows -> NativeImage
     {
         try NativeImage(size: size).inGraphicsContext(context, withFocus: true) { image, context in
             try artist(image, context)
@@ -279,7 +279,7 @@ public extension NativeImage {
         size: CGSize,
         context: GraphicsContext = .current,
         artist: Artist)
-        throws -> NativeImage
+        rethrows -> NativeImage
     {
         try drawNew(size: size, context: context) { _, context in
             try artist(context)
