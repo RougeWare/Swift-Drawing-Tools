@@ -59,8 +59,8 @@ final class Swift_Drawing_ToolsTests: XCTestCase {
 
 
 extension NativeImage {
-    static func swatch(color: NativeColor, size: CGSize = .one) throws -> NativeImage {
-        try drawNew(size: size, context: .goodForSwatch(size: size)) { context in
+    static func swatch(color: NativeColor, size: CGSize = .one) -> NativeImage {
+        drawNew(size: size, context: .goodForSwatch(size: size)) { context in
             guard let context = context else {
                 XCTFail("No context?")
                 return
