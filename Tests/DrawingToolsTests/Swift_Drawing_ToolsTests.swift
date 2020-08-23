@@ -37,7 +37,7 @@ final class Swift_Drawing_ToolsTests: XCTestCase {
     
     
     func testDrawSwatchWithoutThisPackage() throws {
-        let nativeImageWithoutThisPackage = try NativeImage.swatch_withoutThisPackage(color: testColor, size: size)
+        let nativeImageWithoutThisPackage = NativeImage.swatch_withoutThisPackage(color: testColor, size: size)
         
         guard let pngData = nativeImageWithoutThisPackage.pngData() else {
             XCTFail("Not PNG data")
@@ -89,7 +89,6 @@ import UIKit
 
 extension UIImage {
     static func swatch_withoutThisPackage(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) -> UIImage {
-        let image = UIImage(size: size)
         UIGraphicsBeginImageContextWithOptions(size, true, 1)
         defer { UIGraphicsEndImageContext() }
         if let context = UIGraphicsGetCurrentContext() {
@@ -101,7 +100,7 @@ extension UIImage {
         }
         
         return UIGraphicsGetImageFromCurrentImageContext()
-            ?? image
+            ?? UIImage(size: size)
     }
 }
 

@@ -257,8 +257,8 @@ public extension NativeImage {
         #if canImport(UIKit)
         image = NativeImage(size: size)
         #elseif canImport(AppKit)
-        let displayScale = GraphicsContext.Scale.currentDisplay.forNsGraphics
-        let desiredScale = context.scale.forNsGraphics
+        let displayScale = GraphicsContext.Scale.currentDisplay.forAppKit
+        let desiredScale = context.scale.forAppKit
         image = NativeImage(size: CGSize(width:  (size.width  / displayScale.width)  * desiredScale.width,
                                          height: (size.height / displayScale.height) * desiredScale.height))
         #endif

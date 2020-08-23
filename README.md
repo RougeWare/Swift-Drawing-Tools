@@ -37,7 +37,6 @@ import UIKit
 
 extension UIImage {
     static func swatch(color: UIColor, size: CGSize = CGSize(width: 1, height: 1)) -> UIImage {
-        let image = UIImage(size: size)
         UIGraphicsBeginImageContextWithOptions(size, true, 1)
         defer { UIGraphicsEndImageContext() }
         if let context = UIGraphicsGetCurrentContext() {
@@ -49,7 +48,7 @@ extension UIImage {
         }
         
         return UIGraphicsGetImageFromCurrentImageContext()
-            ?? image
+            ?? UIImage(size: size)
     }
 }
 

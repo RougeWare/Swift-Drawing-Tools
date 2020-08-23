@@ -71,8 +71,8 @@ public extension GraphicsContext.Scale {
 }
 #elseif canImport(AppKit)
 public extension GraphicsContext.Scale {
-    /// The value to pass to UIGraphics calls like `UIGraphicsBeginImageContextWithOptions`
-    var forNsGraphics: CGSize {
+    /// The value to use when considering the scale of a `CGContext` is AppKit
+    var forAppKit: CGSize {
         switch self {
         case .currentDisplay:
             guard let currentScreen = NSScreen.main ?? NSScreen.deepest ?? NSScreen.screens.first else {
