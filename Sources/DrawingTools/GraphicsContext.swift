@@ -69,7 +69,40 @@ public extension GraphicsContext.Scale {
         }
     }
 }
+#elseif canImport(AppKit)
+public extension GraphicsContext.Scale {
+    /// The value to use when considering the scale of a `CGContext` is AppKit
+    var forAppKit: CGSize {
+        switch self {
+        case .currentDisplay:
+            guard let currentScreen = NSScreen.main ?? NSScreen.deepest ?? NSScreen.screens.first else {
+                print("Attempted to scale CGContext for AppKit, but there doesn't seem to be a screen attached")
+                return .one
+            }
+            
+            let scaleFactor = currentScreen.backingScaleFactor
+            return .init(width: scaleFactor, height: scaleFactor)
+            
+        case .oneToOne:                             return .one
+        case .multiple(multiplier: let multiplier): return .init(width: multiplier, height: multiplier)
+        }
+    }
+}
 #endif
+
+
+
+public extension GraphicsContext {
+    var scale: Scale {
+        switch self {
+        case .current:
+            return .currentDisplay // FIXME: Maybe not the best approach
+        
+        case .new(size: _, opaque: _, scale: let scale):
+            return scale
+        }
+    }
+}
 
 
 

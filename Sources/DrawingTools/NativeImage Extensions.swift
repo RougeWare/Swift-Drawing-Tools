@@ -252,7 +252,18 @@ public extension NativeImage {
         artist: ArtistWithImage)
         rethrows -> NativeImage
     {
-        try NativeImage(size: size).inGraphicsContext(context, withFocus: true) { image, context in
+        let image: NativeImage
+        
+        #if canImport(UIKit)
+        image = NativeImage(size: size)
+        #elseif canImport(AppKit)
+        let displayScale = GraphicsContext.Scale.currentDisplay.forAppKit
+        let desiredScale = context.scale.forAppKit
+        image = NativeImage(size: CGSize(width:  (size.width  / displayScale.width)  * desiredScale.width,
+                                         height: (size.height / displayScale.height) * desiredScale.height))
+        #endif
+        
+        return try image.inGraphicsContext(context, withFocus: true) { image, context in
             try artist(image, context)
             #if canImport(UIKit)
             return try UIGraphicsGetImageFromCurrentImageContext().unwrappedOrThrow()
