@@ -156,42 +156,45 @@ public extension GraphicsContext {
     /// - Parameter operation: The operation to perform in a `CGContext`
     /// - Throws: Anything `operation` throws
     /// - Returns: Anything `operation` returns
-    func inCgContext<Return>(do operation: NativeImage.OperationInGraphicsContext<Return>)
+    func inCgContext<Return>(do operation: NativeImage.OperationInGraphicsContextWithImageRep<Return>)
         rethrows -> Return
     {
         switch self {
         case .current:
-            return try operation(.current)
+            return try operation(nil, .current)
             
         case .new(size: let size, opaque: let opaque, scale: let scale):
             #if canImport(UIKit)
             
             UIGraphicsBeginImageContextWithOptions(.init(size), opaque, scale.forUiGraphics)
             defer { UIGraphicsEndImageContext() }
-            return try operation(.current)
+            return try operation(nil, .current)
             
             #elseif canImport(AppKit)
             
+            func multiplied(by scaleMultiplier: CGFloat) throws -> Return {
+                let result = try NSGraphicsContext.imageContextWithOptions(size: .init(size), opaque: opaque, scale: scaleMultiplier) { context, imageRep in
+                    return try operation(context, imageRep)
+                }
+                return result
+            }
+            
             switch scale {
             case .currentDisplay:
-                return try operation(.current)
+                return try operation(nil, .current)
                 
             case .multiple(multiplier: let scaleMultiplier)
                     where scaleMultiplier.isZero:
-                return try operation(.current)
+                return try operation(nil, .current)
                 
             case .multiple(multiplier: let scaleMultiplier)
                     where scaleMultiplier == 1:
                 fallthrough
             case .oneToOne:
-                return try NSGraphicsContext.imageContextWithOptions(size: .init(size), opaque: opaque, scale: 1) {
-                    return try operation(.current)
-                }
+                return try multiplied(by: 1)
                 
             case .multiple(multiplier: let scaleMultiplier):
-                return try NSGraphicsContext.imageContextWithOptions(size: .init(size), opaque: opaque, scale: scaleMultiplier) {
-                    return try operation(.current)
-                }
+                return try multiplied(by: scaleMultiplier)
             }
             
             #endif
@@ -218,32 +221,39 @@ public extension NSGraphicsContext {
         size: CGSize,
         opaque: Bool = false,
         scale: CGFloat,
-        operation: () throws -> Return)
+        operation: NativeImage.OperationInGraphicsContextWithImageRep<Return>)
     rethrows -> Return
     {
             
-        guard let rep = NSBitmapImageRep(bitmapDataPlanes: nil,
-                                         pixelsWide: .init(size.width * scale),
-                                         pixelsHigh: .init(size.height * scale),
-                                         bitsPerSample: 8,
-                                         samplesPerPixel: 4,
-                                         hasAlpha: true,
-                                         isPlanar: false,
-                                         colorSpaceName: .deviceRGB,
-                                         bytesPerRow: 0,
-                                         bitsPerPixel: 0)
+        guard let representation = NSBitmapImageRep(
+                bitmapDataPlanes: nil,
+                pixelsWide: .init(size.width * scale),
+                pixelsHigh: .init(size.height * scale),
+                bitsPerSample: 8,
+                samplesPerPixel: 4,
+                hasAlpha: true,
+                isPlanar: false,
+                colorSpaceName: .deviceRGB,
+                bytesPerRow: 0,
+                bitsPerPixel: 0)
         else {
             assertionFailure("Could not make image rep")
-            return try operation()
+            return try operation(nil, .current)
         }
         
-        rep.size = size
-            
+        representation.size = size
+        
         NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
         defer { NSGraphicsContext.restoreGraphicsState() }
         
-        return try operation()
+        guard let nsContext = NSGraphicsContext(bitmapImageRep: representation) else {
+            assertionFailure("Could not make context out of imate rep")
+            return try operation(representation, .current)
+        }
+        
+        NSGraphicsContext.current = nsContext
+        
+        return try operation(representation, nsContext.cgContext)
     }
     
     

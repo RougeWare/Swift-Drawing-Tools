@@ -49,6 +49,17 @@ public extension NativeImage {
     
     
     
+    /// The type of function which can perform an operation when given a graphics context and image
+    ///
+    /// - Parameters:
+    ///   - representation: An image representation. In AppKit, this will contain the results of drawing to the given
+    ///                     context. On UIKit, it is unused. If `nil`, it is unnecessary for the current context.
+    ///   - context:        The graphics context in which this function is operating. This can be `nil`, signifying
+    ///                     that the context could not be fetched.
+    typealias OperationInGraphicsContextWithImageRep<Return> = (_ representation: NativeImageRep?, _ context: CGContext?) throws -> Return
+    
+    
+    
     /// The type of function which can perform an operation when given a graphics context
     ///
     /// - Parameter context: The graphics context in which this function is operating. This can be `nil`, signifying
@@ -61,6 +72,14 @@ public extension NativeImage {
     ///
     /// - Parameter image: The image which this function is operating upon
     typealias OperationOnImage<Return> = (_ image: NativeImage) throws -> Return
+    
+    
+    
+    #if canImport(UIKit)
+    typealias NativeImageRep = Void
+    #elseif canImport(AppKit)
+    typealias NativeImageRep = NSImageRep
+    #endif
 }
 
 
@@ -187,17 +206,21 @@ public extension NativeImage {
         do operation: OperationInGraphicsContextWithImage<Return>)
         rethrows -> Return
     {
-        func handleContextSwitch(_ image: NativeImage) throws -> Return {
-            try context.inCgContext { context in
-                try operation(image, context)
+        try context.inCgContext { imageRep, context in
+            func process(image: NativeImage) throws -> Return {
+                let result = try operation(image, context)
+                #if canImport(AppKit)
+                imageRep.map(image.addRepresentation)
+                #endif
+                return result
             }
-        }
-        
-        if withFocus {
-            return try self.withFocus(flipped: flipped, do: handleContextSwitch)
-        }
-        else {
-            return try handleContextSwitch(self)
+            
+            if withFocus {
+                return try self.withFocus(flipped: flipped, do: process)
+            }
+            else {
+                return try process(image: self)
+            }
         }
     }
     
