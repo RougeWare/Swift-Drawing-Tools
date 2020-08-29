@@ -210,6 +210,7 @@ public extension NativeImage {
             func process(image: NativeImage) throws -> Return {
                 let result = try operation(image, context)
                 #if canImport(AppKit)
+                image.representations.forEach(image.removeRepresentation)
                 imageRep.map(image.addRepresentation)
                 #endif
                 return result
@@ -394,7 +395,6 @@ public extension NSImage {
         let newRep = NSBitmapImageRep(cgImage: cgImage)
         newRep.size = self.size
         return newRep.representation(using: .png, properties: [:])
-
     }
 }
 #endif
