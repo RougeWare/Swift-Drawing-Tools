@@ -97,8 +97,7 @@ public extension NativeImage {
     /// - Returns: Anything the given function returns
     ///
     /// - Throws: Anything the given function throws
-    func withFocus<Return>(do operation: OperationOnImage<Return>) rethrows -> Return
-    {
+    func withFocus<Return>(do operation: OperationOnImage<Return>) rethrows -> Return {
         #if canImport(AppKit) && !targetEnvironment(macCatalyst)
             self.lockFocus()
             defer { self.unlockFocus() }
@@ -209,7 +208,7 @@ public extension NativeImage {
         try context.inCgContext { imageRep, context in
             func process(image: NativeImage) throws -> Return {
                 let result = try operation(image, context)
-                #if canImport(AppKit)
+                #if canImport(AppKit) && !targetEnvironment(macCatalyst)
                 image.representations.forEach(image.removeRepresentation)
                 imageRep.map(image.addRepresentation)
                 #endif
@@ -279,7 +278,12 @@ public extension NativeImage {
          -> NativeImage
     {
         #if canImport(UIKit)
-        #error("TODO")
+        
+        return context.inCgContext { _, context in
+            artist(context)
+            return UIGraphicsGetImageFromCurrentImageContext() ?? .init(size: size)
+        }
+        
         #elseif canImport(AppKit)
         
         return NativeImage(size: size, flipped: flipped) { rect in

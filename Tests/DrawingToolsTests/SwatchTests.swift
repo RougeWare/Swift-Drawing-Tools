@@ -50,7 +50,7 @@ private let expectedTestSwatchGridRgbColors = [
 
 
 
-final class BasicTests: XCTestCase {
+final class SwatchTests: XCTestCase {
     
     func testDrawSwatch() {
         let nativeImage = NativeImage.swatch(color: softBlue, size: size)
