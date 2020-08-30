@@ -64,7 +64,7 @@ public extension NativeImage {
     ///
     /// - Parameter context: The graphics context in which this function is operating. This can be `nil`, signifying
     ///                      that the context could not be fetched.
-    typealias OperationInGraphicsContext<Return> = (_ context: CGContext?) throws -> Return
+    typealias OperationInGraphicsContext<Return> = (_ context: CGContext?) -> Return
     
     
     
@@ -175,13 +175,13 @@ public extension NativeImage {
         flipped: Bool = defaultFlipped,
         withFocus: Bool = true,
         do operation: OperationInGraphicsContext<Return>)
-        rethrows -> Return
+    -> Return
     {
-        try inGraphicsContext(
+        inGraphicsContext(
             .current,
             flipped: flipped,
             withFocus: withFocus) { _, context in
-            try operation(context)
+            operation(context)
         }
     }
     
@@ -244,13 +244,13 @@ public extension NativeImage {
         flipped: Bool = defaultFlipped,
         withFocus: Bool = true,
         do operation: OperationInGraphicsContext<Return>)
-        rethrows -> Return
+    -> Return
     {
-        try inGraphicsContext(
+        inGraphicsContext(
             context,
             flipped: flipped,
             withFocus: withFocus) { _, context in
-            try operation(context)
+            operation(context)
         }
     }
 }
@@ -258,45 +258,6 @@ public extension NativeImage {
 
 
 public extension NativeImage {
-    
-    /// Creates a new image and immediately starts drawing on it
-    ///
-    /// - Note: There are two forms of this function: one that passes the `artist` an image and a context, and one that
-    ///         just passes it a context. This is the one which passes both.
-    ///
-    /// - Parameters:
-    ///   - size:    The size of the new image
-    ///   - context: _optional_ - The context in which to draw the new image. Defaults to the current context.
-    ///   - artist:  The function which will draw the new image
-    ///
-    /// - Throws: Any error that `artist` throws
-    static func drawNew(
-        size: CGSize,
-        context: GraphicsContext = .current,
-        artist: ArtistWithImage)
-        rethrows -> NativeImage
-    {
-        let image: NativeImage
-        
-        #if canImport(UIKit)
-        image = NativeImage(size: size)
-        #elseif canImport(AppKit)
-        let displayScale = GraphicsContext.Scale.currentDisplay.forAppKit
-        let desiredScale = context.scale.forAppKit
-        image = NativeImage(size: CGSize(width:  (size.width  / displayScale.width)  * desiredScale.width,
-                                         height: (size.height / displayScale.height) * desiredScale.height))
-        #endif
-        
-        return try image.inGraphicsContext(context, withFocus: true) { image, context in
-            try artist(image, context)
-            #if canImport(UIKit)
-            return try UIGraphicsGetImageFromCurrentImageContext().unwrappedOrThrow()
-            #elseif canImport(AppKit)
-            return image
-            #endif
-        }
-    }
-    
     
     /// Creates a new image and immediately starts drawing on it
     ///
@@ -312,13 +273,21 @@ public extension NativeImage {
     @inline(__always)
     static func drawNew(
         size: CGSize,
+        flipped: Bool = defaultFlipped,
         context: GraphicsContext = .current,
-        artist: Artist)
-        rethrows -> NativeImage
+        artist: @escaping Artist)
+         -> NativeImage
     {
-        try drawNew(size: size, context: context) { _, context in
-            try artist(context)
+        #if canImport(UIKit)
+        #error("TODO")
+        #elseif canImport(AppKit)
+        
+        return NativeImage(size: size, flipped: flipped) { rect in
+            artist(.current)
+            return true
         }
+        
+        #endif
     }
     
     
@@ -387,14 +356,19 @@ public extension UIImage {
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 public extension NSImage {
     func pngData() -> Data? {
+        GraphicsContext.goodForSwatch(size: size).inCgContext { _, _ in
+            
         // https://stackoverflow.com/a/17510651/3939277
-        guard let cgImage = self.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            guard
+                let current = NSGraphicsContext.current,
+                let cgImage = self.cgImage(forProposedRect: nil, context: current, hints: nil) else {
             return nil
         }
         
         let newRep = NSBitmapImageRep(cgImage: cgImage)
         newRep.size = self.size
         return newRep.representation(using: .png, properties: [:])
+        }
     }
 }
 #endif

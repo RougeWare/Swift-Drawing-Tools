@@ -12,40 +12,40 @@ let softBlueForSwiftImage = RGB<UInt8>(red: 0x42,      green: 0x69,      blue: 0
 let size = CGSize(width: 2, height: 2)
 
 
-let 🔴    = NativeColor(red: 0xFF/0xFF, green: 0x13/0xFF, blue: 0x32/0xFF, alpha: 1)
-let 🔴Rgb = RGB<UInt8>( red: 0xFF,      green: 0x13,      blue: 0x32)
+let 🟥    = NativeColor(red: 0xFF/0xFF, green: 0x13/0xFF, blue: 0x32/0xFF, alpha: 1)
+let 🟥Rgb = RGB<UInt8>( red: 0xFF,      green: 0x13,      blue: 0x32)
 
-let 🟢    = NativeColor(red: 0x02/0xFF, green: 0xF3/0xFF, blue: 0x21/0xFF, alpha: 1)
-let 🟢Rgb = RGB<UInt8>( red: 0x02,      green: 0xF3,      blue: 0x21)
+let 🟩    = NativeColor(red: 0x02/0xFF, green: 0xF3/0xFF, blue: 0x21/0xFF, alpha: 1)
+let 🟩Rgb = RGB<UInt8>( red: 0x02,      green: 0xF3,      blue: 0x21)
 
-let 🔵    = NativeColor(red: 0x21/0xFF, green: 0x32/0xFF, blue: 0xFA/0xFF, alpha: 1)
-let 🔵Rgb = RGB<UInt8>( red: 0x21,      green: 0x32,      blue: 0xFA)
+let 🟦    = NativeColor(red: 0x21/0xFF, green: 0x32/0xFF, blue: 0xFA/0xFF, alpha: 1)
+let 🟦Rgb = RGB<UInt8>( red: 0x21,      green: 0x32,      blue: 0xFA)
 
-let 🟠    = NativeColor(red: 0xFA/0xFF, green: 0x8D/0xFF, blue: 0x09/0xFF, alpha: 1)
-let 🟠Rgb = RGB<UInt8>( red: 0xFA,      green: 0x8D,      blue: 0x09)
+let 🟧    = NativeColor(red: 0xFA/0xFF, green: 0x8D/0xFF, blue: 0x09/0xFF, alpha: 1)
+let 🟧Rgb = RGB<UInt8>( red: 0xFA,      green: 0x8D,      blue: 0x09)
 
-let 🟣    = NativeColor(red: 0xFD/0xFF, green: 0x20/0xFF, blue: 0xFA/0xFF, alpha: 1)
-let 🟣Rgb = RGB<UInt8>( red: 0xFD,      green: 0x20,      blue: 0xFA)
+let 🟪    = NativeColor(red: 0xFD/0xFF, green: 0x20/0xFF, blue: 0xFA/0xFF, alpha: 1)
+let 🟪Rgb = RGB<UInt8>( red: 0xFD,      green: 0x20,      blue: 0xFA)
 
-let 🟡    = NativeColor(red: 0xFE/0xFF, green: 0xF3/0xFF, blue: 0x01/0xFF, alpha: 1)
-let 🟡Rgb = RGB<UInt8>( red: 0xFE,      green: 0xF3,      blue: 0x01)
+let 🟨    = NativeColor(red: 0xFE/0xFF, green: 0xF3/0xFF, blue: 0x01/0xFF, alpha: 1)
+let 🟨Rgb = RGB<UInt8>( red: 0xFE,      green: 0xF3,      blue: 0x01)
 
 private let expectedTestSwatchGridColors = [
-    [🔴, 🟢, 🔵, 🟠, 🟣, 🟡],
-    [🟢, 🔵, 🟠, 🟣, 🟡, 🔴],
-    [🔵, 🟠, 🟣, 🟡, 🔴, 🟢],
-    [🟠, 🟣, 🟡, 🔴, 🟢, 🔵],
-    [🟣, 🟡, 🔴, 🟢, 🔵, 🟠],
-    [🟡, 🔴, 🟢, 🔵, 🟠, 🟣],
+    [🟥, 🟩, 🟦, 🟧, 🟪, 🟨],
+    [🟩, 🟦, 🟧, 🟪, 🟨, 🟥],
+    [🟦, 🟧, 🟪, 🟨, 🟥, 🟩],
+    [🟧, 🟪, 🟨, 🟥, 🟩, 🟦],
+    [🟪, 🟨, 🟥, 🟩, 🟦, 🟧],
+    [🟨, 🟥, 🟩, 🟦, 🟧, 🟪],
 ]
 
 private let expectedTestSwatchGridRgbColors = [
-    [🔴Rgb, 🟢Rgb, 🔵Rgb, 🟠Rgb, 🟣Rgb, 🟡Rgb],
-    [🟢Rgb, 🔵Rgb, 🟠Rgb, 🟣Rgb, 🟡Rgb, 🔴Rgb],
-    [🔵Rgb, 🟠Rgb, 🟣Rgb, 🟡Rgb, 🔴Rgb, 🟢Rgb],
-    [🟠Rgb, 🟣Rgb, 🟡Rgb, 🔴Rgb, 🟢Rgb, 🔵Rgb],
-    [🟣Rgb, 🟡Rgb, 🔴Rgb, 🟢Rgb, 🔵Rgb, 🟠Rgb],
-    [🟡Rgb, 🔴Rgb, 🟢Rgb, 🔵Rgb, 🟠Rgb, 🟣Rgb],
+    [🟥Rgb, 🟩Rgb, 🟦Rgb, 🟧Rgb, 🟪Rgb, 🟨Rgb],
+    [🟩Rgb, 🟦Rgb, 🟧Rgb, 🟪Rgb, 🟨Rgb, 🟥Rgb],
+    [🟦Rgb, 🟧Rgb, 🟪Rgb, 🟨Rgb, 🟥Rgb, 🟩Rgb],
+    [🟧Rgb, 🟪Rgb, 🟨Rgb, 🟥Rgb, 🟩Rgb, 🟦Rgb],
+    [🟪Rgb, 🟨Rgb, 🟥Rgb, 🟩Rgb, 🟦Rgb, 🟧Rgb],
+    [🟨Rgb, 🟥Rgb, 🟩Rgb, 🟦Rgb, 🟧Rgb, 🟪Rgb],
 ]
 
 
@@ -111,6 +111,7 @@ final class BasicTests: XCTestCase {
         
         let swatchGridImage = NativeImage.drawNew(
             size: cgSize,
+            flipped: true,
             context: .goodForSwatch(size: uIntSize))
         { context in
             expectedTestSwatchGridColors.enumerated().forEach { rowIndex, row in
