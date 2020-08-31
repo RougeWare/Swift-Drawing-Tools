@@ -144,44 +144,10 @@ public extension NativeImage {
     /// - Returns: Anything the given function returns
     ///
     /// - Throws: Anything the given function throws
-    func inCurrentGraphicsContext<Return>(
-        flipped: Bool = defaultFlipped,
-        withFocus: Bool = true,
-        do operation: OperationInGraphicsContextWithImage<Return>)
+    func inCurrentGraphicsContext<Return>(do operation: OperationInGraphicsContextWithImage<Return>)
         rethrows -> Return
     {
-        try inGraphicsContext(
-            .current,
-            flipped: flipped,
-            withFocus: withFocus,
-            do: operation)
-    }
-    
-    
-    /// Allows you to perform a contextualized draw operation with the current context on this image.
-    ///
-    /// - Parameters:
-    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. Defaults to `defaultFlipped`.
-    ///   - withFocus: _optional_ - Whether to lock focus on the current image before entering the given function.
-    ///                Focus is guaranteed to be unlocked after `operation` exits.
-    ///                Defaults to `true`.
-    ///   - operation: The contextualized operation to perform while this image has focus lock
-    ///
-    /// - Returns: Anything the given function returns
-    ///
-    /// - Throws: Anything the given function throws
-    func inCurrentGraphicsContext<Return>(
-        flipped: Bool = defaultFlipped,
-        withFocus: Bool = true,
-        do operation: OperationInGraphicsContext<Return>)
-    -> Return
-    {
-        inGraphicsContext(
-            .current,
-            flipped: flipped,
-            withFocus: withFocus) { _, context in
-            operation(context)
-        }
+        try inGraphicsContext(.current, do: operation)
     }
     
     
@@ -200,27 +166,18 @@ public extension NativeImage {
     /// - Throws: Anything the given function throws
     func inGraphicsContext<Return>(
         _ context: GraphicsContext,
-        flipped: Bool = defaultFlipped,
-        withFocus: Bool = true,
         do operation: OperationInGraphicsContextWithImage<Return>)
         rethrows -> Return
     {
-        try context.inCgContext { imageRep, context in
-            func process(image: NativeImage) throws -> Return {
+        try withFocus { image in
+            try context.inCgContext { imageRep, context in
                 let result = try operation(image, context)
                 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-                image.representations.forEach(image.removeRepresentation)
-                imageRep.map(image.addRepresentation)
+                self.representations.forEach(self.removeRepresentation)
+                imageRep.map(self.addRepresentation)
                 #endif
                 return result
             }
-            
-            if withFocus {
-                return try self.withFocus(flipped: flipped, do: process)
-            }
-            else {
-                return try process(image: self)
-            }
         }
     }
     
@@ -238,17 +195,11 @@ public extension NativeImage {
     /// - Returns: Anything the given function returns
     ///
     /// - Throws: Anything the given function throws
-    func inGraphicsContext<Return>(
-        _ context: GraphicsContext,
-        flipped: Bool = defaultFlipped,
-        withFocus: Bool = true,
+    func inGraphicsContext<Return>(_ context: GraphicsContext,
         do operation: OperationInGraphicsContext<Return>)
     -> Return
     {
-        inGraphicsContext(
-            context,
-            flipped: flipped,
-            withFocus: withFocus) { _, context in
+        inGraphicsContext(context) { _, context in
             operation(context)
         }
     }
