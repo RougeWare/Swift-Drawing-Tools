@@ -15,9 +15,14 @@ import DrawingTools
 
 final class InCurrentGraphicsContextTests: XCTestCase {
     
-    func testInCurrentGraphicsContext() {
-        NativeImage(size: .one).inCurrentGraphicsContext { image, context in
+    func testInCurrentGraphicsContext() throws {
+        try NativeImage(size: .one).inCurrentGraphicsContext { image, context in
             
+            #if canImport(UIKit)
+            
+            try XCTSkipIf(true, "UIKit doesn't think of context in this way")
+            
+            #elseif canImport(AppKit)
             guard let context = context else {
                 XCTFail("No context in current context")
                 return
@@ -26,6 +31,7 @@ final class InCurrentGraphicsContextTests: XCTestCase {
             let ppiMultiplier = NSScreen.deepest!.backingScaleFactor
             XCTAssertEqual(ppiMultiplier, .init(context.width))
             XCTAssertEqual(ppiMultiplier, .init(context.height))
+            #endif
             
             XCTAssertEqual(1, image.size.width)
             XCTAssertEqual(1, image.size.height)
