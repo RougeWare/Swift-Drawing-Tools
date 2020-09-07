@@ -6,4 +6,5 @@ XCTMain([
     SwatchTests.allTests,
     FocusTests.allTests,
     InCurrentGraphicsContextTests.allTests,
+    InGraphicsContextTests.allTests,
 ])

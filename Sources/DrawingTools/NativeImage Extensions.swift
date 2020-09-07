@@ -285,13 +285,13 @@ public extension UIImage {
     /// https://developer.apple.com/documentation/appkit/nsimage/1520033-init
     ///
     /// - Parameter size: The size of the image, measured in points
-    convenience init(size: CGSize) {
+    convenience init(size: CGSize, scale: GraphicsContext.Scale = .currentDisplay) {
         let rect = CGRect(origin: .zero, size: size)
         
         UIGraphicsBeginImageContextWithOptions(
             /*size:*/ rect.size,
             /*opaque:*/ false,
-            /*scale:*/ 0 // This means "Use the current screen's scale"
+            /*scale:*/ scale.forUiGraphics // This means "Use the current screen's scale"
         )
         
         defer { UIGraphicsEndImageContext() }
@@ -301,7 +301,27 @@ public extension UIImage {
             return
         }
         
+        print(cgImage.width, cgImage.height)
+        
         self.init(cgImage: cgImage)
+    }
+}
+#elseif canImport(AppKit)
+public extension NSImage {
+    
+    /// Creates a new `UIImage` of the given size, with no content. It is expected that you will immediately draw onto
+    /// it. Using this image without drawing it first is undefined behavior.
+    ///
+    /// This approximates a similar `NSImage` initializer:
+    /// https://developer.apple.com/documentation/appkit/nsimage/1520033-init
+    ///
+    /// - Parameter size: The size of the image, measured in points
+    convenience init(size: CGSize, scale: GraphicsContext.Scale) {
+        let scale = scale.forAppKit
+        
+        self.init(size: CGSize(
+                    width: size.width * scale.width,
+                    height: size.height * scale.height))
     }
 }
 #endif

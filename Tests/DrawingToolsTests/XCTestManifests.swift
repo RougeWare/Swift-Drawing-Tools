@@ -6,6 +6,7 @@ public func allTests() -> [XCTestCaseEntry] {
         testCase(SwatchTests.allTests),
         testCase(FocusTests.allTests),
         testCase(InCurrentGraphicsContextTests.allTests),
+        testCase(InGraphicsContextTests.allTests),
     ]
 }
 #endif

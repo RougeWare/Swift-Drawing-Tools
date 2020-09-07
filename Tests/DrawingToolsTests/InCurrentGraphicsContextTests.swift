@@ -11,16 +11,38 @@ import XCTest
 import CrossKitTypes
 import DrawingTools
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 
 
 final class InCurrentGraphicsContextTests: XCTestCase {
     
     func testInCurrentGraphicsContext() throws {
-        try NativeImage(size: .one).inCurrentGraphicsContext { image, context in
+        NativeImage(size: .one).inCurrentGraphicsContext { image, context in
+            
+            let ppiMultiplier: CGFloat
+            
+            #if canImport(UIKit)
+            ppiMultiplier = UIScreen.main.scale
+            
+            // `UIImage`s expose their scale in their size, whereas AppKit doesn'tß
+            
+            XCTAssertEqual(ppiMultiplier, image.size.width)
+            XCTAssertEqual(ppiMultiplier, image.size.height)
+            
+            #elseif canImport(AppKit)
+            ppiMultiplier = NSScreen.deepest!.backingScaleFactor
+            
+            XCTAssertEqual(1, image.size.width)
+            XCTAssertEqual(1, image.size.height)
+            #endif
+            
             
             #if canImport(UIKit)
             
-            try XCTSkipIf(true, "UIKit doesn't think of context in this way")
+            // UIKit doesn't think of context in this way
             
             #elseif canImport(AppKit)
             guard let context = context else {
@@ -28,13 +50,9 @@ final class InCurrentGraphicsContextTests: XCTestCase {
                 return
             }
             
-            let ppiMultiplier = NSScreen.deepest!.backingScaleFactor
             XCTAssertEqual(ppiMultiplier, .init(context.width))
             XCTAssertEqual(ppiMultiplier, .init(context.height))
             #endif
-            
-            XCTAssertEqual(1, image.size.width)
-            XCTAssertEqual(1, image.size.height)
         }
     }
     
