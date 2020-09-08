@@ -7,4 +7,5 @@ XCTMain([
     FocusTests.allTests,
     InCurrentGraphicsContextTests.allTests,
     InGraphicsContextTests.allTests,
+    GraphicsContext_Tests.allTests,
 ])
