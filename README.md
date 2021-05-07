@@ -11,8 +11,8 @@ The first tool in this package is some syntactic sugar around `CGContext`. This 
 ### With Drawing Tools: ###
 ```swift
 import DrawingTools
-import CrossKitTypes
-import RectangleTools
+import CrossKitTypes  // Both of these are
+import RectangleTools // included in this package
 
 
 
