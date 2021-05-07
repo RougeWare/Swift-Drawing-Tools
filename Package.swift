@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "Swift Drawing Tools",
+    name: "DrawingTools",
     
     platforms: [
         .iOS(.v13),
