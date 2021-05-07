@@ -65,7 +65,9 @@ public extension NativeImage {
 
 
 
-public extension NativeImage {
+
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+public extension NSImage {
     
     /// Executes the given function while this image has draw context focus, and automatically unlocks that focus after
     /// the given function returns
@@ -80,10 +82,8 @@ public extension NativeImage {
     /// - Throws: Anything the given function throws
     func withFocus<Return>(do operation: OperationOnImage<Return>) rethrows -> Return
     {
-        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-            self.lockFocus()
-            defer { self.unlockFocus() }
-        #endif
+        self.lockFocus()
+        defer { self.unlockFocus() }
         
         return try operation(self)
     }
@@ -103,25 +103,29 @@ public extension NativeImage {
     func withFocus<Return>(
         flipped: Bool,
         do operation: OperationOnImage<Return>)
-        rethrows -> Return
+    rethrows -> Return
     {
-        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-            self.lockFocusFlipped(flipped)
-            defer { self.unlockFocus() }
-        #endif
+        self.lockFocusFlipped(flipped)
+        defer { self.unlockFocus() }
         
         return try operation(self)
     }
-    
+}
+#endif
+
+
+
+public extension NativeImage {
     
     /// Allows you to perform a contextualized draw operation with the current context on this image.
     ///
     /// - Parameters:
-    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. Defaults to `defaultFlipped`.
+    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. This only affects AppKit drawing.
+    ///                Defaults to `defaultFlipped`.
     ///   - withFocus: _optional_ - Whether to lock focus on the current image before entering the given function.
-    ///                Focus is guaranteed to be unlocked after `operation` exits.
+    ///                Focus is guaranteed to be unlocked after `operation` exits. This only affects AppKit drawing.
     ///                Defaults to `true`.
-    ///   - operation: The contextualized operation to perform while this image has focus lock
+    ///   - operation: The contextualized operation to perform on the new image.
     ///
     /// - Returns: Anything the given function returns
     ///
@@ -143,11 +147,12 @@ public extension NativeImage {
     /// Allows you to perform a contextualized draw operation with the current context on this image.
     ///
     /// - Parameters:
-    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. Defaults to `defaultFlipped`.
+    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. This only affects AppKit drawing.
+    ///                Defaults to `defaultFlipped`.
     ///   - withFocus: _optional_ - Whether to lock focus on the current image before entering the given function.
-    ///                Focus is guaranteed to be unlocked after `operation` exits.
+    ///                Focus is guaranteed to be unlocked after `operation` exits. This only affects AppKit drawing.
     ///                Defaults to `true`.
-    ///   - operation: The contextualized operation to perform while this image has focus lock
+    ///   - operation: The contextualized operation to perform on the new image.
     ///
     /// - Returns: Anything the given function returns
     ///
@@ -171,11 +176,12 @@ public extension NativeImage {
     ///
     /// - Parameters:
     ///   - context:   The graphics context in which to run the given function
-    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. Defaults to `defaultFlipped`.
+    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. This only affects AppKit drawing.
+    ///                Defaults to `defaultFlipped`.
     ///   - withFocus: _optional_ - Whether to lock focus on the current image before entering the given function.
-    ///                Focus is guaranteed to be unlocked after `operation` exits.
+    ///                Focus is guaranteed to be unlocked after `operation` exits. This only affects AppKit drawing.
     ///                Defaults to `true`.
-    ///   - operation: The contextualized operation to perform while this image has focus lock
+    ///   - operation: The contextualized operation to perform on the new image.
     ///
     /// - Returns: Anything the given function returns
     ///
@@ -193,12 +199,16 @@ public extension NativeImage {
             }
         }
         
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
         if withFocus {
             return try self.withFocus(flipped: flipped, do: handleContextSwitch)
         }
         else {
             return try handleContextSwitch(self)
         }
+        #else
+        return try handleContextSwitch(self)
+        #endif
     }
     
     
@@ -206,11 +216,12 @@ public extension NativeImage {
     ///
     /// - Parameters:
     ///   - context:   The graphics context in which to run the given function
-    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. Defaults to `defaultFlipped`.
+    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. This only affects AppKit drawing.
+    ///                Defaults to `defaultFlipped`.
     ///   - withFocus: _optional_ - Whether to lock focus on the current image before entering the given function.
-    ///                Focus is guaranteed to be unlocked after `operation` exits.
+    ///                Focus is guaranteed to be unlocked after `operation` exits. This only affects AppKit drawing.
     ///                Defaults to `true`.
-    ///   - operation: The contextualized operation to perform while this image has focus lock
+    ///   - operation: The contextualized operation to perform on the new image.                
     ///
     /// - Returns: Anything the given function returns
     ///
@@ -237,34 +248,40 @@ public extension NativeImage {
     
     /// Creates a new image and immediately starts drawing on it
     ///
+    /// - Attention: This flushes the graphics context after `artist` returns and before the new image is returned
+    ///
     /// - Note: There are two forms of this function: one that passes the `artist` an image and a context, and one that
     ///         just passes it a context. This is the one which passes both.
     ///
     /// - Parameters:
     ///   - size:    The size of the new image
     ///   - context: _optional_ - The context in which to draw the new image. Defaults to the current context.
+    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. This only affects AppKit drawing.
+    ///                Defaults to `defaultFlipped`.
     ///   - artist:  The function which will draw the new image
     ///
     /// - Throws: Any error that `artist` throws
     static func drawNew(
         size: CGSize,
         context: GraphicsContext = .current,
+        flipped: Bool = defaultFlipped,
         artist: ArtistWithImage)
         rethrows -> NativeImage
     {
         let image: NativeImage
         
         #if canImport(UIKit)
-        image = NativeImage(size: size)
+        image = UIImage(size: size)
         #elseif canImport(AppKit)
-        let displayScale = GraphicsContext.Scale.currentDisplay.forAppKit
-        let desiredScale = context.scale.forAppKit
-        image = NativeImage(size: CGSize(width:  (size.width  / displayScale.width)  * desiredScale.width,
-                                         height: (size.height / displayScale.height) * desiredScale.height))
+        let scaleMultiplier = context.scale.appKitScaleMultiplier
+        image = NSImage(size: CGSize(width:  size.width  * scaleMultiplier.width,
+                                     height: size.height * scaleMultiplier.height))
         #endif
         
-        return try image.inGraphicsContext(context, withFocus: true) { image, context in
+        return try image.inGraphicsContext(context, flipped: flipped, withFocus: true) { image, context in
             try artist(image, context)
+            context?.flush()
+            
             #if canImport(UIKit)
             return try UIGraphicsGetImageFromCurrentImageContext().unwrappedOrThrow()
             #elseif canImport(AppKit)
@@ -276,12 +293,16 @@ public extension NativeImage {
     
     /// Creates a new image and immediately starts drawing on it
     ///
+    /// - Attention: This flushes the graphics context after `artist` returns and before the new image is returned
+    ///
     /// - Note: There are two forms of this function: one that passes the `artist` an image and a context, and one that
     ///         just passes it a context. This is the one which just passes the context.
     ///
     /// - Parameters:
     ///   - size:    The size of the new image
     ///   - context: _optional_ - The context in which to draw the new image. Defaults to the current context.
+    ///   - flipped:   _optional_ - Whether to flip the Y axis of the graphics context. This only affects AppKit drawing.
+    ///                Defaults to `defaultFlipped`.
     ///   - artist:  The function which will draw the new image
     ///
     /// - Throws: Any error that `artist` throws
@@ -289,10 +310,11 @@ public extension NativeImage {
     static func drawNew(
         size: CGSize,
         context: GraphicsContext = .current,
+        flipped: Bool = defaultFlipped,
         artist: Artist)
         rethrows -> NativeImage
     {
-        try drawNew(size: size, context: context) { _, context in
+        try drawNew(size: size, context: context, flipped: flipped) { _, context in
             try artist(context)
         }
     }
