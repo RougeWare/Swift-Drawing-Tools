@@ -87,6 +87,16 @@ public extension GraphicsContext.Scale {
         case .multiple(multiplier: let multiplier): return .init(width: multiplier, height: multiplier)
         }
     }
+    
+    
+    /// Multiply your image's size by this to make sure that it is the current size in the current CGContext's true display scale
+    var appKitScaleMultiplier: CGSize {
+        let displayScale = Self.currentDisplay.forAppKit
+        let desiredScale = self.forAppKit
+        
+        return CGSize(width:  (desiredScale.width  / displayScale.width),
+                      height: (desiredScale.height / displayScale.height))
+    }
 }
 #endif
 
@@ -164,11 +174,20 @@ public extension GraphicsContext {
             return try operation(.current)
             
         case .new(size: let size, opaque: let opaque, scale: let scale):
+            
+            let context: CGContext?
+            
             #if canImport(UIKit)
             UIGraphicsBeginImageContextWithOptions(.init(size), opaque, scale.forUiGraphics)
             defer { UIGraphicsEndImageContext() }
+            context = .current
+            #else
+            context = .current
+            let newScale = self.scale.appKitScaleMultiplier
+            context?.scaleBy(x: newScale.width, y: newScale.height)
             #endif
-            return try operation(.current)
+            
+            return try operation(context)
         }
     }
 }
