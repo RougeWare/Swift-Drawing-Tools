@@ -21,7 +21,7 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/RougeWare/Swift-Rectangle-Tools.git", from: "2.10.0"),
+        .package(url: "https://github.com/RougeWare/Swift-Rectangle-Tools.git", from: "2.10.1"),
         .package(url: "https://github.com/RougeWare/Swift-Cross-Kit-Types.git", from: "1.0.0"),
         .package(url: "https://github.com/RougeWare/Swift-Optional-Tools.git",  from: "1.0.0"),
         .package(url: "https://github.com/koher/swift-image.git", from: "0.7.0"),
